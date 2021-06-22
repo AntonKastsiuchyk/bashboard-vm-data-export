@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Xml.Serialization;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DataExportToXl
 {
@@ -18,40 +20,42 @@ namespace DataExportToXl
         {
             string spGetProducts = "GetProducts";
 
-            using (SqlConnection connection = new SqlConnection(Constants.connectionStringBashboard))
+            using (SqlConnection connection = new SqlConnection(ConfigurationServices.GetConnString("dashboard")))
             {
-                connection.Open();
-                SqlCommand command = new SqlCommand(spGetProducts, connection);
-                command.CommandType = CommandType.StoredProcedure;
-
-                List<Product> products = new List<Product>();
-
-                using (SqlDataReader reader = command.ExecuteReader())
                 {
-                    if (reader.HasRows)
-                    {
-                        while (reader.Read())
-                        {
-                            Product product = new Product();
-                            product.Id = reader.GetInt32(0);
-                            product.Name = reader.GetString(1);
-                            product.Description = reader.GetString(2);
-                            product.Price = reader.GetDecimal(3);
+                    connection.Open();
+                    SqlCommand command = new SqlCommand(spGetProducts, connection);
+                    command.CommandType = CommandType.StoredProcedure;
 
-                            products.Add(product);
+                    List<Product> products = new List<Product>();
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.HasRows)
+                        {
+                            while (reader.Read())
+                            {
+                                Product product = new Product();
+                                product.Id = reader.GetInt32(0);
+                                product.Name = reader.GetString(1);
+                                product.Description = reader.GetString(2);
+                                product.Price = reader.GetDecimal(3);
+
+                                products.Add(product);
+                            }
                         }
                     }
-                }
 
-                Console.WriteLine("Products were added.");
-                return products;
+                    Console.WriteLine("Products were added.");
+                    return products;
+                }
             }
         }
 
         internal static void SerializeToXml(List<Product> listOfObjects)
         {
             XmlSerializer formatter = new XmlSerializer(typeof(List<Product>));
-            using (FileStream fileStream = new FileStream("D:\\products.xml", FileMode.OpenOrCreate))
+            using (FileStream fileStream = new FileStream(ConfigurationServices.GetPath() + "products.xml", FileMode.OpenOrCreate))
             {
                 formatter.Serialize(fileStream, listOfObjects);
             }

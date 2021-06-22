@@ -1,15 +1,17 @@
 ﻿using System;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Json;
 
 namespace DataExportToXl
 {
     class DataBaseWorker
     {
-        internal void CreateDataBase(string connectionString)
+        internal void CreateDataBase()
         {
-            string sqlExpression = "CREATE DATABASE bashboard";
+            string sqlExpression = "CREATE DATABASE dashboard";
 
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            using (SqlConnection connection = new SqlConnection(ConfigurationServices.GetConnString("base")))
             {
                 connection.Open();
                 SqlCommand command = new SqlCommand(sqlExpression, connection);
@@ -19,13 +21,13 @@ namespace DataExportToXl
             }
         }
 
-        internal void CreateTable(string connectionString)
+        internal void CreateTable()
         {
             string sqlExpression =
                 "CREATE TABLE Products (Id INT PRIMARY KEY IDENTITY, Name NVARCHAR(20) NOT NULL," +
                 "Description NVARCHAR(50) NOT NULL, Price SMALLMONEY NOT NULL)";
 
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            using (SqlConnection connection = new SqlConnection(ConfigurationServices.GetConnString("dashboard")))
             {
                 connection.Open();
                 SqlCommand command = new SqlCommand(sqlExpression, connection);
@@ -37,19 +39,18 @@ namespace DataExportToXl
 
         internal void InsertValuesIntoDb()
         {
-            string insertExpression = "INSERT Products VALUES" +
-                                      "('ProductOne', 'Information one', '10.00')," +
-                                      "('ProductTwo', 'Information two', '20.00')," +
-                                      "('ProductThree', 'Information three', '30.00')," +
-                                      "('ProductFour', 'Information four', '40.00')," +
-                                      "('ProductFive', 'Information five', '50.00')," +
-                                      "('ProductSix', 'Information six', '60.00')," +
-                                      "('ProductSeven', 'Information seven', '70.00')," +
-                                      "('ProductEight', 'Information eight', '80.00')," +
-                                      "('ProductNine', 'Information nine', '90.00')," +
-                                      "('ProductTen', 'Information ten', '100.00')";
+            string insertExpression = "INSERT INTO Products VALUES" +
+                                      "('Product1', 'Information 1', '10.00')," +
+                                      "('Product2', 'Information 2', '20.00')," +
+                                      "('Product3', 'Information 3', '30.00')," +
+                                      "('Product4', 'Information 4', '40.00')," +
+                                      "('Product5', 'Information 5', '50.00')," +
+                                      "('Product6', 'Information 6', '60.00')," +
+                                      "('Product7', 'Information 7', '70.00')," +
+                                      "('Product8', 'Information 8', '80.00')," +
+                                      "('Product9', 'Information 9', '90.00')";
 
-            using (SqlConnection connection = new SqlConnection(Constants.connectionStringBashboard))
+            using (SqlConnection connection = new SqlConnection(ConfigurationServices.GetConnString("dashboard")))
             {
                 connection.Open();
                 SqlCommand command = new SqlCommand(insertExpression, connection);
@@ -61,9 +62,9 @@ namespace DataExportToXl
 
         internal void UpdateValueInDb()
         {
-            string updateExpression = "UPDATE Products SET Description = 'Information 0' WHERE Price = 100.00";
+            string updateExpression = "UPDATE Products SET Description = 'Information 0' WHERE Price = 90.00";
 
-            using (SqlConnection connection = new SqlConnection(Constants.connectionStringBashboard))
+            using (SqlConnection connection = new SqlConnection(ConfigurationServices.GetConnString("dashboard")))
             {
                 connection.Open();
                 SqlCommand commandUpdate = new SqlCommand(updateExpression, connection);
@@ -77,7 +78,7 @@ namespace DataExportToXl
         {
             string deleteExpression = "DELETE FROM Products WHERE Description = 'Information 0'";
 
-            using (SqlConnection connection = new SqlConnection(Constants.connectionStringBashboard))
+            using (SqlConnection connection = new SqlConnection(ConfigurationServices.GetConnString("dashboard")))
             {
                 connection.Open();
                 SqlCommand commandDelete = new SqlCommand(deleteExpression, connection);
@@ -91,7 +92,7 @@ namespace DataExportToXl
         {
             string procedure = "CREATE PROCEDURE [dbo].[GetProducts] AS SELECT * FROM Products GO";
 
-            using (SqlConnection connection = new SqlConnection(Constants.connectionStringBashboard))
+            using (SqlConnection connection = new SqlConnection(ConfigurationServices.GetConnString("dashboard")))
             {
                 connection.Open();
                 SqlCommand command = new SqlCommand(procedure, connection);
