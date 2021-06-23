@@ -10,26 +10,22 @@ namespace DataExportToXl
     {
         private static IConfigurationRoot _configuration;
 
-        public static string GetConnString(string connectionStringKey)
+        public string DashboardConnectionString { get; }
+
+        public string BaseConnectionString { get; }
+
+        public string PathXl { get; }
+
+        public ConfigurationServices()
         {
             _configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetParent(AppContext.BaseDirectory).FullName)
                 .AddJsonFile("appsettings.json", true)
                 .Build();
 
-            string connectionStringValue = _configuration.GetConnectionString(connectionStringKey);
-            return connectionStringValue;
-        }
-
-        public static string GetPath()
-        {
-            _configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetParent(AppContext.BaseDirectory).FullName)
-                .AddJsonFile("appsettings.json", true)
-                .Build();
-
-            string path = _configuration["PathXL"];
-            return path;
+            DashboardConnectionString = _configuration.GetConnectionString("dashboard");
+            BaseConnectionString = _configuration.GetConnectionString("base");
+            PathXl = _configuration["PathXL"];
         }
     }
 }

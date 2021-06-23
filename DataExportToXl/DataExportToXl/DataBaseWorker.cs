@@ -10,8 +10,9 @@ namespace DataExportToXl
         internal void CreateDataBase()
         {
             string sqlExpression = "CREATE DATABASE dashboard";
+            ConfigurationServices configuration = new ConfigurationServices();
 
-            using (SqlConnection connection = new SqlConnection(ConfigurationServices.GetConnString("base")))
+            using (SqlConnection connection = new SqlConnection(configuration.BaseConnectionString))
             {
                 connection.Open();
                 SqlCommand command = new SqlCommand(sqlExpression, connection);
@@ -27,7 +28,9 @@ namespace DataExportToXl
                 "CREATE TABLE Products (Id INT PRIMARY KEY IDENTITY, Name NVARCHAR(20) NOT NULL," +
                 "Description NVARCHAR(50) NOT NULL, Price SMALLMONEY NOT NULL)";
 
-            using (SqlConnection connection = new SqlConnection(ConfigurationServices.GetConnString("dashboard")))
+            ConfigurationServices configuration = new ConfigurationServices();
+
+            using (SqlConnection connection = new SqlConnection(configuration.DashboardConnectionString))
             {
                 connection.Open();
                 SqlCommand command = new SqlCommand(sqlExpression, connection);
@@ -50,7 +53,9 @@ namespace DataExportToXl
                                       "('Product8', 'Information 8', '80.00')," +
                                       "('Product9', 'Information 9', '90.00')";
 
-            using (SqlConnection connection = new SqlConnection(ConfigurationServices.GetConnString("dashboard")))
+            ConfigurationServices configuration = new ConfigurationServices();
+
+            using (SqlConnection connection = new SqlConnection(configuration.DashboardConnectionString))
             {
                 connection.Open();
                 SqlCommand command = new SqlCommand(insertExpression, connection);
@@ -64,7 +69,9 @@ namespace DataExportToXl
         {
             string updateExpression = "UPDATE Products SET Description = 'Information 0' WHERE Price = 90.00";
 
-            using (SqlConnection connection = new SqlConnection(ConfigurationServices.GetConnString("dashboard")))
+            ConfigurationServices configuration = new ConfigurationServices();
+
+            using (SqlConnection connection = new SqlConnection(configuration.DashboardConnectionString))
             {
                 connection.Open();
                 SqlCommand commandUpdate = new SqlCommand(updateExpression, connection);
@@ -77,8 +84,9 @@ namespace DataExportToXl
         internal void DeleteValueInDb()
         {
             string deleteExpression = "DELETE FROM Products WHERE Description = 'Information 0'";
+            ConfigurationServices configuration = new ConfigurationServices();
 
-            using (SqlConnection connection = new SqlConnection(ConfigurationServices.GetConnString("dashboard")))
+            using (SqlConnection connection = new SqlConnection(configuration.DashboardConnectionString))
             {
                 connection.Open();
                 SqlCommand commandDelete = new SqlCommand(deleteExpression, connection);
@@ -91,8 +99,9 @@ namespace DataExportToXl
         internal void CreateProcedureInDb()
         {
             string procedure = "CREATE PROCEDURE [dbo].[GetProducts] AS SELECT * FROM Products GO";
+            ConfigurationServices configuration = new ConfigurationServices();
 
-            using (SqlConnection connection = new SqlConnection(ConfigurationServices.GetConnString("dashboard")))
+            using (SqlConnection connection = new SqlConnection(configuration.DashboardConnectionString))
             {
                 connection.Open();
                 SqlCommand command = new SqlCommand(procedure, connection);

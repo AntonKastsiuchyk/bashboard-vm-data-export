@@ -19,8 +19,9 @@ namespace DataExportToXl
         internal static List<Product> GetProducts()
         {
             string spGetProducts = "GetProducts";
+            ConfigurationServices configuration = new ConfigurationServices();
 
-            using (SqlConnection connection = new SqlConnection(ConfigurationServices.GetConnString("dashboard")))
+            using (SqlConnection connection = new SqlConnection(configuration.DashboardConnectionString))
             {
                 {
                     connection.Open();
@@ -55,7 +56,9 @@ namespace DataExportToXl
         internal static void SerializeToXml(List<Product> listOfObjects)
         {
             XmlSerializer formatter = new XmlSerializer(typeof(List<Product>));
-            using (FileStream fileStream = new FileStream(ConfigurationServices.GetPath() + "products.xml", FileMode.OpenOrCreate))
+            ConfigurationServices configuration = new ConfigurationServices();
+
+            using (FileStream fileStream = new FileStream(configuration.PathXl + "products.xml", FileMode.OpenOrCreate))
             {
                 formatter.Serialize(fileStream, listOfObjects);
             }
