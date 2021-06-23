@@ -25,7 +25,8 @@ namespace DataExportToXl
 
             DashboardConnectionString = _configuration.GetConnectionString("dashboard");
             BaseConnectionString = _configuration.GetConnectionString("base");
-            PathXl = _configuration["PathXL"];
+
+            PathXl = _configuration["PathXl"];
         }
     }
 }

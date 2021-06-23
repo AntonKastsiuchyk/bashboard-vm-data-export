@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
@@ -7,107 +10,76 @@ namespace DataExportToXl
 {
     class DataBaseWorker
     {
-        internal void CreateDataBase()
-        {
-            string sqlExpression = "CREATE DATABASE dashboard";
-            ConfigurationServices configuration = new ConfigurationServices();
+        private string _connectionString;
 
-            using (SqlConnection connection = new SqlConnection(configuration.BaseConnectionString))
+        internal void ExecuteSqlExpression(string sqlExpression)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
                 SqlCommand command = new SqlCommand(sqlExpression, connection);
                 command.ExecuteNonQuery();
 
-                Console.WriteLine("DB was created.");
+                Console.WriteLine("Successfully.");
             }
         }
 
-        internal void CreateTable()
+        internal List<Product> GetProducts()
         {
-            string sqlExpression =
-                "CREATE TABLE Products (Id INT PRIMARY KEY IDENTITY, Name NVARCHAR(20) NOT NULL," +
-                "Description NVARCHAR(50) NOT NULL, Price SMALLMONEY NOT NULL)";
+            string spGetProducts = "GetProducts";
 
-            ConfigurationServices configuration = new ConfigurationServices();
-
-            using (SqlConnection connection = new SqlConnection(configuration.DashboardConnectionString))
+            using (SqlConnection connection = new SqlConnection(_connectionString))
             {
-                connection.Open();
-                SqlCommand command = new SqlCommand(sqlExpression, connection);
-                command.ExecuteNonQuery();
+                {
+                    connection.Open();
+                    SqlCommand command = new SqlCommand(spGetProducts, connection);
+                    command.CommandType = CommandType.StoredProcedure;
 
-                Console.WriteLine("Table was created.");
+                    List<Product> products = new List<Product>();
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.HasRows)
+                        {
+                            while (reader.Read())
+                            {
+                                Product product = new Product();
+                                product.Id = reader.GetInt32(0);
+                                product.Name = reader.GetString(1);
+                                product.Description = reader.GetString(2);
+                                product.Price = reader.GetDecimal(3);
+
+                                products.Add(product);
+                            }
+                        }
+                    }
+
+                    Console.WriteLine("Products were added.");
+                    return products;
+                }
             }
         }
 
-        internal void InsertValuesIntoDb()
+        public DataBaseWorker(ConfigurationServices configuration, string keyConnectionString)
         {
-            string insertExpression = "INSERT INTO Products VALUES" +
-                                      "('Product1', 'Information 1', '10.00')," +
-                                      "('Product2', 'Information 2', '20.00')," +
-                                      "('Product3', 'Information 3', '30.00')," +
-                                      "('Product4', 'Information 4', '40.00')," +
-                                      "('Product5', 'Information 5', '50.00')," +
-                                      "('Product6', 'Information 6', '60.00')," +
-                                      "('Product7', 'Information 7', '70.00')," +
-                                      "('Product8', 'Information 8', '80.00')," +
-                                      "('Product9', 'Information 9', '90.00')";
-
-            ConfigurationServices configuration = new ConfigurationServices();
-
-            using (SqlConnection connection = new SqlConnection(configuration.DashboardConnectionString))
+            while (String.CompareOrdinal(_connectionString, configuration.BaseConnectionString) == 0 
+                   || String.CompareOrdinal(_connectionString, configuration.DashboardConnectionString) == 0
+                   || string.IsNullOrEmpty(_connectionString))
             {
-                connection.Open();
-                SqlCommand command = new SqlCommand(insertExpression, connection);
-                command.ExecuteNonQuery();
+                if (keyConnectionString.Equals("dashboard", StringComparison.Ordinal))
+                {
+                    _connectionString = configuration.DashboardConnectionString;
+                    return;
+                }
 
-                Console.WriteLine("Values were added.");
-            }
-        }
+                if (keyConnectionString.Equals("base", StringComparison.Ordinal))
+                {
+                    _connectionString = configuration.BaseConnectionString;
+                    return;
+                }
 
-        internal void UpdateValueInDb()
-        {
-            string updateExpression = "UPDATE Products SET Description = 'Information 0' WHERE Price = 90.00";
-
-            ConfigurationServices configuration = new ConfigurationServices();
-
-            using (SqlConnection connection = new SqlConnection(configuration.DashboardConnectionString))
-            {
-                connection.Open();
-                SqlCommand commandUpdate = new SqlCommand(updateExpression, connection);
-                commandUpdate.ExecuteNonQuery();
-
-                Console.WriteLine("Updating completed successfully.");
-            }
-        }
-
-        internal void DeleteValueInDb()
-        {
-            string deleteExpression = "DELETE FROM Products WHERE Description = 'Information 0'";
-            ConfigurationServices configuration = new ConfigurationServices();
-
-            using (SqlConnection connection = new SqlConnection(configuration.DashboardConnectionString))
-            {
-                connection.Open();
-                SqlCommand commandDelete = new SqlCommand(deleteExpression, connection);
-                commandDelete.ExecuteNonQuery();
-
-                Console.WriteLine("Deleting completed successfully.");
-            }
-        }
-
-        internal void CreateProcedureInDb()
-        {
-            string procedure = "CREATE PROCEDURE [dbo].[GetProducts] AS SELECT * FROM Products GO";
-            ConfigurationServices configuration = new ConfigurationServices();
-
-            using (SqlConnection connection = new SqlConnection(configuration.DashboardConnectionString))
-            {
-                connection.Open();
-                SqlCommand command = new SqlCommand(procedure, connection);
-                command.ExecuteNonQuery();
-
-                Console.WriteLine("Procedure was added.");
+                Console.WriteLine("Unknown connection string. Please input correct key.");
+                keyConnectionString = Console.ReadLine();
             }
         }
     }
